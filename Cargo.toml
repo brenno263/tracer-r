@@ -2,7 +2,13 @@
 name = "tracer-r"
 version = "0.1.0"
 edition = "2021"
+authors = ["Brennan Seymour <brenno263@gmail.com>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+image = "0.24.3"
+crossbeam = "0.8.2"
+benchmarking = "0.4.11"
+num = "0.4.0"
+rand = "0.8.5"
