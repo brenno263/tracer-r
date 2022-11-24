@@ -57,6 +57,31 @@ impl Canvas for ImageBuffer {
 }
 
 #[derive(Clone, Copy)]
+pub struct FPixel {
+	pub r: f32,
+	pub g: f32,
+	pub b: f32,
+}
+
+impl FPixel {
+	pub fn black() -> Self {
+		Self { r: 0.0, g: 0.0, b: 0.0 }
+	}
+
+	pub fn rgb(r: f32, g: f32, b: f32) -> Self {
+		Self {r, g, b}
+	}
+
+	pub fn attenuate(self, other: Self) -> Self {
+		Self::rgb(
+			self.r * other.r,
+			self.g * other.g,
+			self.b * other.b,
+		)
+	}
+}
+
+#[derive(Clone, Copy)]
 pub struct Pixel {
 	pub r: u8,
 	pub g: u8,

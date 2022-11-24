@@ -11,12 +11,10 @@ pub struct Scene<'a> {
 impl Drawable for Scene<'_> {
     fn intersect(self: &Self, ray: &Ray) -> Option<Collision> {
         for el in &self.elements {
-			match el.intersect(ray) {
-				Some(coll) => {return Some(coll)},
-				None => {}
+			if let Some(coll) = el.intersect(ray) {
+				return Some(coll);
 			}
 		}
-
 		None
     }
 }
