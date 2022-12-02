@@ -27,8 +27,8 @@ fn main() {
 	let fov: f32 = 85.0 * 3.141592654 / 180.0;
 	let camera = Camera::new(V3::zero(), V3::z(), V3::y(), fov, bounds.0 as f32 / bounds.1 as f32);
 
-	let diffuse_green = Diffuse { albedo: Pixel::rgb(100, 240, 120) };
-	let diffuse_orange = Diffuse { albedo: Pixel::rgb(200, 120, 20) };
+	let diffuse_green = Diffuse { albedo: PixelF::rgb_u8(100, 240, 120) };
+	let diffuse_orange = Diffuse { albedo: PixelF::rgb_u8(200, 120, 20) };
 
 
 	let sphere = Sphere::new(V3::new(0.0, 0.0, 3.0), 0.9, &diffuse_green);

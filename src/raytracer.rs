@@ -1,4 +1,6 @@
-use crate::image_handling::*;
+use crate::image_handling::PixelF;
+use crate::image_handling::Renderer;
+use crate::image_handling::Canvas;
 use crate::vectors::*;
 use crate::Drawable;
 use crate::Camera;
@@ -10,14 +12,14 @@ pub struct Raytracer {
 }
 
 impl Raytracer {
-	fn get_color(ray: &Ray, scene: &dyn Drawable, depth: u32) -> Pixel {
+	fn get_color(ray: &Ray, scene: &dyn Drawable, depth: u32) -> PixelF {
 		if depth <= 0 {
-			return Pixel::new();
+			return PixelF::black();
 		}
 
 		match scene.intersect(ray) {
 			Some(collision) => {
-				Self::get_color(&collision.ray_out, scene, depth - 1).attenuate(&collision.color)
+				Self::get_color(&collision.ray_out, scene, depth - 1).attenuate(collision.color)
 			}
 			_ => {
 				let unit_direction = ray.dir.normalized();
@@ -25,11 +27,11 @@ impl Raytracer {
 				let lerp = |t: f32, start: f32, end: f32| -> f32 {
 					start * (1.0 - t) + end * t
 				};
-				Pixel {
-					r: lerp(t, 255.0, 150.0) as u8,
-					g: lerp(t, 255.0, 210.0) as u8,
-					b: 255,
-				}
+				PixelF::rgb_u8(
+					lerp(t, 255.0, 150.0) as u8,
+					lerp(t, 255.0, 210.0) as u8,
+					255,
+				)
 			}
 		}
 	}
@@ -42,7 +44,7 @@ impl Renderer for Raytracer {
 		let ss_amt = 8;
 		for x in 0..bounds.0 {
 			for y in 0..bounds.1 {
-				let mut pixel = Pixel::new();
+				let mut pixel = PixelF::black();
 				for _ in 0..ss_amt {
 					let scaled_x = (x as f32 + rand.gen::<f32>()) / bounds.0 as f32;
 					let scaled_y = (y as f32 + rand.gen::<f32>()) / bounds.1 as f32;

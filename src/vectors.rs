@@ -4,7 +4,7 @@ use std::ops::Mul;
 use std::ops::Div;
 use rand::prelude::*;
 
-use crate::image_handling::Pixel;
+use crate::image_handling::PixelF;
 
 const EPLISON: f32 = 0.0001;
 
@@ -156,7 +156,7 @@ pub struct Collision {
 	pub normal: V3,
 	pub t: f32,
 	pub front_facing: bool,
-	pub color: Pixel,
+	pub color: PixelF,
 }
 
 impl<'a> Collision {
@@ -178,15 +178,15 @@ impl<'a> Collision {
 
 pub trait Material {
 	///returns (reflection, albedo)
-	fn scatter(&self, ray_in: &Ray, point: V3, normal: V3) -> (Ray, Pixel);
+	fn scatter(&self, ray_in: &Ray, point: V3, normal: V3) -> (Ray, PixelF);
 }
 
 pub struct Diffuse {
-	pub albedo: Pixel,
+	pub albedo: PixelF,
 }
 
 impl Material for Diffuse {
-	fn scatter(&self, ray_in: &Ray, point: V3, normal: V3) -> (Ray, Pixel) {
+	fn scatter(&self, _ray_in: &Ray, point: V3, normal: V3) -> (Ray, PixelF) {
 		let mut scatter_direction = normal + V3::random_on_unit_sphere();
 		//correct some wierdness that might happen when our random offset ~= -normal
 		if scatter_direction.near_zero() {
