@@ -3,7 +3,7 @@ use crate::{
     material::Material,
     ray::Ray,
     raytracer::Collision,
-    traits::{Boundable, Drawable, intersect_collection},
+    traits::{Boundable, Drawable},
     vectors::*,
 };
 
@@ -74,7 +74,7 @@ impl Boundable for Primitive {
             Primitive::Sphere {
                 center,
                 radius,
-                material,
+                material: _
             } => {
                 let radius_offset = V3::new(radius, radius, radius);
                 Bounds {

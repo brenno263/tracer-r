@@ -1,5 +1,5 @@
 pub use crate::{
-	utils::lerp,
+	utils::{lerp, parse_pair},
 	bounded_volume_hierarchy::{
 		BVHBuildNode,
 		LinearBVH,

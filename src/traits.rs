@@ -5,7 +5,6 @@ use crate::camera::Camera;
 use crate::image_handling::PixelF;
 use crate::ray::Ray;
 use crate::raytracer::Collision;
-use crate::vectors::{Plane, V3};
 
 /// relatively generic way of using canvases, so that we can adapt to use a variety of output methods.
 pub trait Canvas {

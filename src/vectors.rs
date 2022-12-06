@@ -86,7 +86,7 @@ impl V3 {
     }
 
     pub fn scalar_projection(&self, other: &V3) -> f32 {
-        self.magnitude()
+        self.dot(&other.normalized())
     }
 
     pub fn projection(&self, other: &V3) -> V3 {

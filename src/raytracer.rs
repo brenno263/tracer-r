@@ -60,11 +60,6 @@ impl Renderer for Raytracer {
         canvas: &mut C,
         camera: &Camera,
     ) -> Result<(), String> {
-        println!(
-            "rendering chunk. offset: ({}, {})",
-            canvas.offset().0,
-            canvas.offset().1
-        );
         let mut rand = rand::thread_rng();
         let bounds = canvas.bounds();
         for x in 0..bounds.0 {
