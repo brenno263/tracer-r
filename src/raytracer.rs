@@ -1,11 +1,10 @@
+use crate::camera::Camera;
 use crate::image_handling::PixelF;
 use crate::material::Material;
 use crate::ray::Ray;
+use crate::traits::Drawable;
 use crate::traits::{Canvas, Renderer};
 use crate::vectors::*;
-use crate::camera::Camera;
-use crate::traits::Drawable;
-
 
 #[derive(Clone, Debug)]
 pub struct Raytracer {

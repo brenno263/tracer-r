@@ -180,58 +180,61 @@ enum BVHBuildNodeData {
 }
 
 impl BVHBuildNode {
-	pub fn new(mut primatives: Vec<Primitive>, prims_per_leaf: usize) -> Self {
-		let prim_infos: Vec<BVHPrimitiveInfo> = primatives
-        .drain(..)
-        .map(|prim| BVHPrimitiveInfo::new(prim))
-        .collect();
+    pub fn new(mut primatives: Vec<Primitive>, prims_per_leaf: usize) -> Self {
+        let prim_infos: Vec<BVHPrimitiveInfo> = primatives
+            .drain(..)
+            .map(|prim| BVHPrimitiveInfo::new(prim))
+            .collect();
 
-    	Self::recursive_build_bvh(prim_infos, prims_per_leaf)
-	}
+        Self::recursive_build_bvh(prim_infos, prims_per_leaf)
+    }
 
-	fn recursive_build_bvh(mut prim_infos: Vec<BVHPrimitiveInfo>, prims_per_leaf: usize) -> BVHBuildNode {
-		let n_prims = prim_infos.len();
-		if n_prims <= prims_per_leaf {
-			//Just make a leaf node and return. We can't subdivide further.
-			BVHBuildNode::new_leaf(prim_infos)
-		} else {
-			// Choose a splitting dimension
-			let centroid_avg = prim_infos
-				.iter()
-				.map(|p| p.centroid)
-				.fold(V3::zero(), |acc, c| acc + c)
-				/ prim_infos.len() as f32;
-			let starting_bounds = Bounds {
-				min_point: centroid_avg,
-				max_point: centroid_avg,
-			};
-			let centroid_bounds = prim_infos
-				.iter()
-				.map(|p| p.centroid)
-				.fold(starting_bounds, Bounds::union_v3);
-			let split_dim = centroid_bounds.maximum_length_axis();
-	
-			// If our area is a single point we can't do much here.
-			if centroid_bounds.is_singularity() {
-				return BVHBuildNode::new_leaf(prim_infos);
-			}
-	
-			// Partition our infos into two sets
-			let mid = partition::partition_index(prim_infos.as_mut_slice(), |p| {
-				split_dim.proj(p.centroid) < split_dim.proj(centroid_avg)
-			});
-	
-			let prim_infos_right = prim_infos.drain(mid..).collect();
-			let prim_infos_left = prim_infos;
-	
-			// Call this method on those two sets to build children
-			BVHBuildNode::new_interior(
-				split_dim,
-				Self::recursive_build_bvh(prim_infos_left, prims_per_leaf),
-				Self::recursive_build_bvh(prim_infos_right, prims_per_leaf),
-			)
-		}
-	}
+    fn recursive_build_bvh(
+        mut prim_infos: Vec<BVHPrimitiveInfo>,
+        prims_per_leaf: usize,
+    ) -> BVHBuildNode {
+        let n_prims = prim_infos.len();
+        if n_prims <= prims_per_leaf {
+            //Just make a leaf node and return. We can't subdivide further.
+            BVHBuildNode::new_leaf(prim_infos)
+        } else {
+            // Choose a splitting dimension
+            let centroid_avg = prim_infos
+                .iter()
+                .map(|p| p.centroid)
+                .fold(V3::zero(), |acc, c| acc + c)
+                / prim_infos.len() as f32;
+            let starting_bounds = Bounds {
+                min_point: centroid_avg,
+                max_point: centroid_avg,
+            };
+            let centroid_bounds = prim_infos
+                .iter()
+                .map(|p| p.centroid)
+                .fold(starting_bounds, Bounds::union_v3);
+            let split_dim = centroid_bounds.maximum_length_axis();
+
+            // If our area is a single point we can't do much here.
+            if centroid_bounds.is_singularity() {
+                return BVHBuildNode::new_leaf(prim_infos);
+            }
+
+            // Partition our infos into two sets
+            let mid = partition::partition_index(prim_infos.as_mut_slice(), |p| {
+                split_dim.proj(p.centroid) < split_dim.proj(centroid_avg)
+            });
+
+            let prim_infos_right = prim_infos.drain(mid..).collect();
+            let prim_infos_left = prim_infos;
+
+            // Call this method on those two sets to build children
+            BVHBuildNode::new_interior(
+                split_dim,
+                Self::recursive_build_bvh(prim_infos_left, prims_per_leaf),
+                Self::recursive_build_bvh(prim_infos_right, prims_per_leaf),
+            )
+        }
+    }
 
     fn new_leaf(prim_infos: Vec<BVHPrimitiveInfo>) -> BVHBuildNode {
         let bounds = prim_infos
@@ -299,57 +302,58 @@ pub struct LinearBVH {
     nodes: Vec<LinearBVHNode>,
 }
 
-impl LinearBVH {
-
-}
+impl LinearBVH {}
 
 impl From<BVHBuildNode> for LinearBVH {
     fn from(root: BVHBuildNode) -> Self {
-
-		// Since this is a flattened binary tree, we need our number of nodes to be a
-		// power of two for child-getting logic to work out. Here we find the smallest
-		// power of two which can contain our data.
-		let mut n_nodes = 1;
-		while n_nodes < root.n_nodes {
-			n_nodes <<= 1;
-		}
+        // Since this is a flattened binary tree, we need our number of nodes to be a
+        // power of two for child-getting logic to work out. Here we find the smallest
+        // power of two which can contain our data.
+        let mut n_nodes = 1;
+        while n_nodes < root.n_nodes {
+            n_nodes <<= 1;
+        }
         let mut array: Vec<LinearBVHNode> = Vec::with_capacity(n_nodes);
 
-		let mut current_node = root;
-		let mut node_queue: VecDeque<BVHBuildNode> = VecDeque::with_capacity(128);
-		
-		loop {
-			match current_node.data {
-				BVHBuildNodeData::PrimInfos(mut prim_infos) => {
-					let prims: Vec<Primitive> = prim_infos.drain(..).map(|pi| pi.primitive).collect();
-					array.push(LinearBVHNode {
-						split_axis: current_node.split_axis,
-						bounds: current_node.bounds,
-						data: LinearBVHNodeData::Prims(prims)
-					});
-				},
-				BVHBuildNodeData::Children(children) => {
-					let first_child_offset = array.len() + 1 + node_queue.len();
-					array.push(LinearBVHNode {
-						split_axis: current_node.split_axis,
-						bounds: current_node.bounds,
-						data: LinearBVHNodeData::Children((first_child_offset, first_child_offset + 1)),
-					});
+        let mut current_node = root;
+        let mut node_queue: VecDeque<BVHBuildNode> = VecDeque::with_capacity(128);
 
-					node_queue.push_back(children.0);
-					node_queue.push_back(children.1);
-				}
-			};
+        loop {
+            match current_node.data {
+                BVHBuildNodeData::PrimInfos(mut prim_infos) => {
+                    let prims: Vec<Primitive> =
+                        prim_infos.drain(..).map(|pi| pi.primitive).collect();
+                    array.push(LinearBVHNode {
+                        split_axis: current_node.split_axis,
+                        bounds: current_node.bounds,
+                        data: LinearBVHNodeData::Prims(prims),
+                    });
+                }
+                BVHBuildNodeData::Children(children) => {
+                    let first_child_offset = array.len() + 1 + node_queue.len();
+                    array.push(LinearBVHNode {
+                        split_axis: current_node.split_axis,
+                        bounds: current_node.bounds,
+                        data: LinearBVHNodeData::Children((
+                            first_child_offset,
+                            first_child_offset + 1,
+                        )),
+                    });
 
-			match node_queue.pop_front() {
-				Some(popped) => {
-					current_node = popped;
-				}
-				None => {
-					break;
-				}
-			}
-		};
+                    node_queue.push_back(children.0);
+                    node_queue.push_back(children.1);
+                }
+            };
+
+            match node_queue.pop_front() {
+                Some(popped) => {
+                    current_node = popped;
+                }
+                None => {
+                    break;
+                }
+            }
+        }
 
         LinearBVH { nodes: array }
     }
@@ -358,12 +362,12 @@ impl From<BVHBuildNode> for LinearBVH {
 struct LinearBVHNode {
     split_axis: SplitAxis,
     bounds: Bounds,
-	data: LinearBVHNodeData,
+    data: LinearBVHNodeData,
 }
 
 enum LinearBVHNodeData {
-	Children((usize, usize)),
-	Prims(Vec<Primitive>),
+    Children((usize, usize)),
+    Prims(Vec<Primitive>),
 }
 
 impl Drawable for LinearBVH {
@@ -378,38 +382,37 @@ impl Drawable for LinearBVH {
             let node = &self.nodes[current_offset];
             if node.bounds.intersects_with_dir_inv(&ray, dir_inv) {
                 match node.data {
-					LinearBVHNodeData::Prims(ref prims) => {
-						for p in prims {
-							if let Some(coll) = p.intersect(ray) {
-								ray.max = coll.t;
-								collision = Some(coll);
-							}
-						}
-					},
+                    LinearBVHNodeData::Prims(ref prims) => {
+                        for p in prims {
+                            if let Some(coll) = p.intersect(ray) {
+                                ray.max = coll.t;
+                                collision = Some(coll);
+                            }
+                        }
+                    }
                     LinearBVHNodeData::Children(child_offsets) => {
                         // If the direction is negative compared to this axis, visit
-						// the second (more positive) child first, since it's spacially
-						// closer.
+                        // the second (more positive) child first, since it's spacially
+                        // closer.
                         if node.split_axis.proj(ray.dir) < 0. {
                             offset_stack.push(child_offsets.1);
                             offset_stack.push(child_offsets.0);
                         } else {
-							offset_stack.push(child_offsets.0);
-							offset_stack.push(child_offsets.1);
-						}
+                            offset_stack.push(child_offsets.0);
+                            offset_stack.push(child_offsets.1);
+                        }
                     }
-                    
                 }
             }
-			
-			match offset_stack.pop() {
-				Some(popped) => {
-					current_offset = popped;
-				},
-				None => {
-					break;
-				}
-			}
+
+            match offset_stack.pop() {
+                Some(popped) => {
+                    current_offset = popped;
+                }
+                None => {
+                    break;
+                }
+            }
         }
 
         collision

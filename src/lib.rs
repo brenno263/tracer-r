@@ -18,66 +18,76 @@ use prelude::*;
 use rand::Rng;
 use rayon::prelude::*;
 
-pub fn conditional_render<S>(rt: &Raytracer, camera: &Camera, scene: &S, bounds: (usize, usize), parallel: bool) -> ImageBuffer
-	where S: Drawable + Send + Sync
+pub fn conditional_render<S>(
+    rt: &Raytracer,
+    camera: &Camera,
+    scene: &S,
+    bounds: (usize, usize),
+    parallel: bool,
+) -> ImageBuffer
+where
+    S: Drawable + Send + Sync,
 {
-	if parallel {
-		par_render(rt, camera, scene, bounds)
-	} else {
-		render(rt, camera, scene, bounds)
-	}
+    if parallel {
+        par_render(rt, camera, scene, bounds)
+    } else {
+        render(rt, camera, scene, bounds)
+    }
 }
 
 pub fn render<S>(rt: &Raytracer, camera: &Camera, scene: &S, bounds: (usize, usize)) -> ImageBuffer
-	where S: Drawable
+where
+    S: Drawable,
 {
-	let mut image_out = ImageBuffer::new(bounds.0, bounds.1);
-	rt.render(scene, &mut image_out, camera).unwrap();
-	image_out
+    let mut image_out = ImageBuffer::new(bounds.0, bounds.1);
+    rt.render(scene, &mut image_out, camera).unwrap();
+    image_out
 }
 
-pub fn par_render<S>(rt: &Raytracer, camera: &Camera, scene: &S, bounds: (usize, usize)) -> ImageBuffer
-	where S: Drawable + Send + Sync
+pub fn par_render<S>(
+    rt: &Raytracer,
+    camera: &Camera,
+    scene: &S,
+    bounds: (usize, usize),
+) -> ImageBuffer
+where
+    S: Drawable + Send + Sync,
 {
-	let mut chunks = ImageBuffer::bands(bounds, 16);
-	chunks.par_iter_mut().for_each(|chunk| {
-		rt.render(scene, chunk, camera).unwrap();
-	});
+    let mut chunks = ImageBuffer::bands(bounds, 16);
+    chunks.par_iter_mut().for_each(|chunk| {
+        rt.render(scene, chunk, camera).unwrap();
+    });
 
-	let mut image_out = ImageBuffer::new(bounds.0, 0);
-	for mut chunk in chunks {
-		image_out.append_rows(&mut chunk);
-	}
-	image_out
+    let mut image_out = ImageBuffer::new(bounds.0, 0);
+    for mut chunk in chunks {
+        image_out.append_rows(&mut chunk);
+    }
+    image_out
 }
 
 pub fn random_spheres(num: usize, bounds: Bounds) -> Vec<Primitive> {
-	let mut rand = rand::thread_rng();
-	let mut elements: Vec<Primitive> = Vec::with_capacity(num);
+    let mut rand = rand::thread_rng();
+    let mut elements: Vec<Primitive> = Vec::with_capacity(num);
 
-	for _ in 0..num {
-		let x: f32 = rand.gen_range(bounds.min_point.x..bounds.max_point.x);
-		let y: f32 = rand.gen_range(bounds.min_point.y..bounds.max_point.y);
-		let z: f32 = rand.gen_range(bounds.min_point.z..bounds.max_point.z);
-		let color = PixelF::random();
-		let param: f32 = rand.gen();
-		let radius: f32 = rand.gen::<f32>() + 0.5;
+    for _ in 0..num {
+        let x: f32 = rand.gen_range(bounds.min_point.x..bounds.max_point.x);
+        let y: f32 = rand.gen_range(bounds.min_point.y..bounds.max_point.y);
+        let z: f32 = rand.gen_range(bounds.min_point.z..bounds.max_point.z);
+        let color = PixelF::random();
+        let param: f32 = rand.gen();
+        let radius: f32 = rand.gen::<f32>() + 0.5;
 
-		let mat_pick: usize = rand.gen_range(0..3);
-		let mat = match mat_pick {
-			0 => Material::new_diffuse(color),
-			1 => Material::new_specular(color, param),
-			_ => Material::new_dielectric(color, 1. + param * param, 0.005),
-		};
+        let mat_pick: usize = rand.gen_range(0..3);
+        let mat = match mat_pick {
+            0 => Material::new_diffuse(color),
+            1 => Material::new_specular(color, param),
+            _ => Material::new_dielectric(color, 1. + param * param, 0.005),
+        };
 
-		elements.push(Primitive::new_sphere(
-			V3::new(x, y, z),
-			radius,
-			mat
-		));
-	}
+        elements.push(Primitive::new_sphere(V3::new(x, y, z), radius, mat));
+    }
 
-	elements
+    elements
 }
 
 pub fn big_sphere_grid(
@@ -123,7 +133,7 @@ pub fn sample_scene() -> Vec<Primitive> {
     let specular_mirror = Material::new_specular(PixelF::rgb(0.9, 0.8, 1.), 0.05);
     let dielectric_teal = Material::new_dielectric(PixelF::rgb(0.5, 0.8, 1.), 1.16, 0.);
 
-    let sphere  = Primitive::new_sphere(V3::new(0.0, 0.0, 0.), 0.9, specular_gold);
+    let sphere = Primitive::new_sphere(V3::new(0.0, 0.0, 0.), 0.9, specular_gold);
     let sphere2 = Primitive::new_sphere(V3::new(2.1, 0.0, 0.), 1.1, diffuse_orange);
     let sphere3 = Primitive::new_sphere(V3::new(-1.9, 0.3, 0.), 0.9, diffuse_dark_blue);
     let sphere4 = Primitive::new_sphere(V3::new(0.3, 0.3, -2.), 0.6, dielectric_teal);

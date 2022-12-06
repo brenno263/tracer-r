@@ -7,7 +7,6 @@ use crate::{
     vectors::*,
 };
 
-
 #[derive(Clone, Debug)]
 pub enum Primitive {
     Sphere {
@@ -74,7 +73,7 @@ impl Boundable for Primitive {
             Primitive::Sphere {
                 center,
                 radius,
-                material: _
+                material: _,
             } => {
                 let radius_offset = V3::new(radius, radius, radius);
                 Bounds {
@@ -88,13 +87,13 @@ impl Boundable for Primitive {
 
 impl Drawable for Vec<Primitive> {
     fn intersect(&self, mut ray: Ray) -> Option<Collision> {
-		let mut out = None;
+        let mut out = None;
         for ref el in self {
-			if let Some(coll) = el.intersect(ray) {
-				ray.max = coll.t;
-				out = Some(coll);
-			}
-		}
-		out
+            if let Some(coll) = el.intersect(ray) {
+                ray.max = coll.t;
+                out = Some(coll);
+            }
+        }
+        out
     }
 }
