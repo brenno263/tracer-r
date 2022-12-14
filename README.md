@@ -8,6 +8,8 @@ To make up for that a bit, I've included a binary - tracer-r-mpi - which achieve
 However, it should be noted that this library operates on OS threads, not separate processes like MPI.
 As such, it may not have get the same performance increases that MPI does on a high-performance computing cluster.
 
+A write up and presentation can be found in the `presentation` directory, alongside a slew of images and other relevant resources.
+
 ## Running Tracer-R
 
 If you don't want to install Rust toolings, I've included some precompiled, statically linked binaries for you.
