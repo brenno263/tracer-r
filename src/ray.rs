@@ -3,6 +3,9 @@ use crate::vectors::V3;
 pub static RAY_MIN: f32 = 0.00001;
 pub static RAY_MAX: f32 = 100_000.;
 
+/// A Ray describes a ray of light cast out. It has an origin and a direction.
+/// It also encodes a min and max, which are altered throughout rendering to
+/// restrict calculations to a distance range.
 #[derive(Clone, Copy, Debug)]
 pub struct Ray {
     pub origin: V3,

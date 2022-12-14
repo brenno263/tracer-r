@@ -4,6 +4,7 @@ use rand::Rng;
 use crate::ray::Ray;
 use crate::vectors::V3;
 
+/// The camera controls our point of view. It is used to cast rays into the scene.
 #[derive(Debug)]
 pub struct Camera {
     position: V3,
@@ -35,12 +36,14 @@ impl Camera {
         }
     }
 
+	/// Get a ray coming out of the camera at these pixel coordinates.
     pub fn get_ray(&self, x: usize, y: usize) -> Ray {
         let x_frac = x as f32 / self.bounds.0 as f32;
         let y_frac = y as f32 / self.bounds.1 as f32;
         self.get_ray_from_f32(x_frac, y_frac)
     }
 
+	// Get a ray coming out of the camera at these pixel coordinates, with sub-pixel perturbation for supersampling.
     pub fn get_ray_perturbed(&self, x: usize, y: usize, rand: &mut ThreadRng) -> Ray {
         let x_frac = (x as f32 + rand.gen::<f32>()) / self.bounds.0 as f32;
         let y_frac = (y as f32 + rand.gen::<f32>()) / self.bounds.1 as f32;

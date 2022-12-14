@@ -18,6 +18,10 @@ use prelude::*;
 use rand::Rng;
 use rayon::prelude::*;
 
+// This file orchestrates all the modules in the project, and exports some utility methods which make
+// rendering a bit easier for our binaries.
+
+/// Render a scene either in parallel or in series depending on a passed bool.
 pub fn conditional_render<S>(
     rt: &Raytracer,
     camera: &Camera,
@@ -35,6 +39,7 @@ where
     }
 }
 
+/// Render a scene in series.
 pub fn render<S>(rt: &Raytracer, camera: &Camera, scene: &S, bounds: (usize, usize)) -> ImageBuffer
 where
     S: Drawable,
@@ -44,6 +49,7 @@ where
     image_out
 }
 
+/// Render a scene in parallel.
 pub fn par_render<S>(
     rt: &Raytracer,
     camera: &Camera,
@@ -65,6 +71,7 @@ where
     image_out
 }
 
+/// Generate a scene with random spheres.
 pub fn random_spheres(num: usize, bounds: Bounds) -> Vec<Primitive> {
     let mut rand = rand::thread_rng();
     let mut elements: Vec<Primitive> = Vec::with_capacity(num);
@@ -90,6 +97,7 @@ pub fn random_spheres(num: usize, bounds: Bounds) -> Vec<Primitive> {
     elements
 }
 
+/// Generate a scene with a grid of spheres, ligtly perturbed in the z axis.
 pub fn big_sphere_grid(
     grid_dims: (usize, usize),
     world_dims: ((f32, f32), (f32, f32)),
@@ -125,6 +133,7 @@ pub fn big_sphere_grid(
     elements
 }
 
+/// Build a preset scene with six spheres.
 pub fn sample_scene() -> Vec<Primitive> {
     let diffuse_orange = Material::new_diffuse(PixelF::rgb_u8(200, 120, 30));
     let diffuse_dark_blue = Material::new_diffuse(PixelF::rgb(0.08, 0.1, 0.4));

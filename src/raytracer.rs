@@ -6,6 +6,8 @@ use crate::traits::Drawable;
 use crate::traits::{Canvas, Renderer};
 use crate::vectors::*;
 
+/// The raytracer does all our, well, raytracing. It turns a drawable into an image by intersecting
+/// a ton of rays with it.
 #[derive(Clone, Debug)]
 pub struct Raytracer {
     ss_amt: usize,
@@ -13,20 +15,24 @@ pub struct Raytracer {
 }
 
 impl Raytracer {
+	/// Builder pattern function to set supersampling amount
     pub fn ss_amt(mut self, ss_amt: usize) -> Self {
         self.ss_amt = ss_amt;
         self
     }
 
+	/// Builder pattern function to set max recursion depth.
     pub fn max_depth(mut self, max_depth: usize) -> Self {
         self.max_depth = max_depth;
         self
     }
 
+	/// Intersect a ray with a drawable, resolving the correct color.
     pub fn get_color(&self, ray: Ray, scene: &dyn Drawable) -> PixelF {
         self.get_color_recursive(ray, scene, 0)
     }
 
+	/// Get color, but recurse on reflected rays until we hit nothing.
     fn get_color_recursive(&self, ray: Ray, scene: &dyn Drawable, depth: usize) -> PixelF {
         if depth > self.max_depth {
             return PixelF::black();
@@ -40,6 +46,7 @@ impl Raytracer {
         }
     }
 
+	/// Determine the color of the sky depending on what direction we flew off.
     fn get_sky_color(ray: Ray) -> PixelF {
         let unit_direction = ray.dir.normalized();
         let t = 0.5 * (unit_direction.y + 1.0);
@@ -61,17 +68,22 @@ impl Renderer for Raytracer {
     ) -> Result<(), String> {
         let mut rand = rand::thread_rng();
         let bounds = canvas.bounds();
+		// For each pixel in our canvas...
         for x in 0..bounds.0 {
             for y in 0..bounds.1 {
                 let mut pixel = PixelF::black();
                 for _ in 0..self.ss_amt {
+					// Generate a ray from our camera
                     let ray = camera.get_ray_perturbed(
                         x + canvas.offset().0,
                         y + canvas.offset().1,
                         &mut rand,
                     );
+					// Perform the intersection
                     let color = self.get_color(ray, scene);
 
+					// Add the color on to our output pixel. This performs our ss averaging by
+					// scaling down each sample when it's added.
                     pixel = pixel + color.scale(1.0 / self.ss_amt as f32);
                 }
                 canvas.put_pixel(x, y, pixel);
@@ -91,6 +103,7 @@ impl Default for Raytracer {
     }
 }
 
+/// A Collision represents a collision between a ray and an object.
 #[derive(Clone)]
 pub struct Collision {
     pub ray_in: Ray,

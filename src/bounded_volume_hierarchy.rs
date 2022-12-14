@@ -8,6 +8,7 @@ use crate::{
     vectors::V3,
 };
 
+/// Bounds defines an axis-aligned area in 3d space, bounded between its min_point and max_point
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Bounds {
     pub min_point: V3,
@@ -15,6 +16,7 @@ pub struct Bounds {
 }
 
 impl Bounds {
+	/// Take the union of two bounds, producing the minimal bound that contains both input bounds.
     fn union(b1: Bounds, b2: Bounds) -> Self {
         Bounds {
             min_point: V3 {
@@ -30,6 +32,7 @@ impl Bounds {
         }
     }
 
+	/// Expand these bounds into a minimal bounds containing the original bounds and the supplied point.
     fn union_v3(b: Bounds, v: V3) -> Self {
         Bounds {
             min_point: V3 {
@@ -45,10 +48,12 @@ impl Bounds {
         }
     }
 
+	/// Calculate the centroid of a bounds.
     fn centroid(&self) -> V3 {
         (self.min_point + self.max_point) * 0.5
     }
 
+	/// Find the axis along which this bounds is longest.
     fn maximum_length_axis(&self) -> SplitAxis {
         let x_dim = self.max_point.x - self.min_point.x;
         let y_dim = self.max_point.y - self.min_point.y;
@@ -63,20 +68,23 @@ impl Bounds {
         }
     }
 
+	/// Determine if this bounds has zero area.
     fn is_singularity(&self) -> bool {
         self.min_point == self.max_point
     }
 
+	/// Get this bounds' dimension along a supplied axis.
     fn dimension(&self, axis: SplitAxis) -> f32 {
         axis.proj(self.max_point) - axis.proj(self.min_point)
     }
 
+	/// Check if a ray intersects these bounds
     fn intersects(&self, ray: &Ray) -> bool {
         let d_inv = V3::new(1. / ray.dir.x, 1. / ray.dir.y, 1. / ray.dir.z);
         self.intersects_with_dir_inv(ray, d_inv)
     }
 
-    /// This version of intersection takes a precomputed inverted direction and direction sign.
+    /// This version of intersection takes a precomputed inverted direction.
     /// This division is expensive and can be done just once for each ray.
     fn intersects_with_dir_inv(&self, ray: &Ray, d_inv: V3) -> bool {
         // We are really looking for the furthest intersection with a near-plane
@@ -116,6 +124,9 @@ impl Bounds {
     }
 }
 
+/// Contains a Primitive and a bounds and centroid with which do partitioning.
+/// This will be converted back to a simple Primitive when partitioning is done,
+/// discarding the additional information.
 #[derive(Debug)]
 pub struct BVHPrimitiveInfo {
     primitive: Primitive,
@@ -135,6 +146,9 @@ impl BVHPrimitiveInfo {
     }
 }
 
+// While this was intended to be turned into a LinearBVH before rendering,
+// we go ahead and implement Drawable for all our BVH components so that
+// it can also be drawn while just a tree.
 impl Drawable for BVHPrimitiveInfo {
     fn intersect(&self, ray: Ray) -> Option<Collision> {
         self.primitive.intersect(ray)
@@ -147,6 +161,7 @@ impl Drawable for &BVHPrimitiveInfo {
     }
 }
 
+/// A way of referring to axes
 #[derive(Debug)]
 enum SplitAxis {
     X,
@@ -155,6 +170,7 @@ enum SplitAxis {
 }
 
 impl SplitAxis {
+	/// Project a vector along some axis
     fn proj(&self, v: V3) -> f32 {
         match self {
             SplitAxis::X => v.x,
@@ -164,6 +180,7 @@ impl SplitAxis {
     }
 }
 
+/// A node in our BVH tree
 #[derive(Debug)]
 pub struct BVHBuildNode {
     bounds: Bounds,
@@ -173,6 +190,8 @@ pub struct BVHBuildNode {
     data: BVHBuildNodeData,
 }
 
+/// A BVHBuildNode can either have relevant BVHPrimitiveInfo items to query
+/// or children nodes.
 #[derive(Debug)]
 enum BVHBuildNodeData {
     PrimInfos(Vec<BVHPrimitiveInfo>),
@@ -253,7 +272,8 @@ impl BVHBuildNode {
         }
     }
 
-    /// Note that the two children NEED to be contiguous
+    /// Create a new interior node having two children.
+	/// Note that the two children NEED to be contiguous.
     fn new_interior(split_axis: SplitAxis, c1: BVHBuildNode, c2: BVHBuildNode) -> BVHBuildNode {
         let bounds = Bounds::union(c1.bounds, c2.bounds);
 
@@ -298,6 +318,9 @@ impl Drawable for &BVHBuildNode {
     }
 }
 
+/// The LinearBVH is a flattened BVH tree, eschewing pointers for a contiguous chunk of memory.
+/// It also crops extra information out of its primitives, terminating in Primitives rather than
+/// BVHPrimitiveInfos.
 pub struct LinearBVH {
     nodes: Vec<LinearBVHNode>,
 }

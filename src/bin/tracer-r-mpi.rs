@@ -68,6 +68,8 @@ fn main() {
         image.append_rows(&mut chunk);
     }
 
+	// Our threads should really be done if all the senders are dropped.
+	// However, we can join then anyways - it may be useful to propogate a thread panic.
     for h in handles {
         h.join().unwrap();
     }

@@ -9,3 +9,7 @@ pub use crate::{
     utils::{lerp, parse_pair},
     vectors::V3,
 };
+
+// If you're not familiar with a prelude, it re-exports an essential set of the most commonly needed
+// functionalities, so that they can all be imported in one line.
+// This one is a little too eager, I'll admit. It should be cropped down a bit.

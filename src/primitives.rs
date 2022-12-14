@@ -7,6 +7,10 @@ use crate::{
     vectors::*,
 };
 
+
+/// This represents a primitive object which can be rendered.
+/// It's an enum to leave room for triangles, quads, meshes, etc.
+/// Those don't exist in the project yet, but I may add them later.
 #[derive(Clone, Debug)]
 pub enum Primitive {
     Sphere {

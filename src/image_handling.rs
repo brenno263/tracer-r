@@ -3,6 +3,9 @@ use rand::Rng;
 
 use crate::traits::Canvas;
 
+
+/// Represents an image buffer than can be written to, then saved to a file.
+/// This is what the raytracer writes to, abstacting away file shenanigans.
 #[derive(Debug)]
 pub struct ImageBuffer {
     pub bounds: (usize, usize),
@@ -27,6 +30,9 @@ impl ImageBuffer {
         self.bounds.1
     }
 
+	/// Create a number of ImageBuffers with offsets to represent a number of bands in an image.
+	/// Great for parallelizing, as you can then append these bands onto an empty ImageBuffer to
+	/// reassemble an image.
     pub fn bands(bounds: (usize, usize), rows_per_band: usize) -> Vec<ImageBuffer> {
         let remainder_band_rows = bounds.1 % rows_per_band;
         let num_bands = bounds.1 / rows_per_band + if remainder_band_rows > 0 { 1 } else { 0 };
@@ -60,6 +66,9 @@ impl ImageBuffer {
         chunks
     }
 
+	/// This creates bands from an existing image. These bands can be edited in-place, and don't need to be reassembled.
+	/// However, Rust cannot guarantee safety when passing references like this between threads, so this cannot be used
+	/// with conventional multithreading.
     pub fn bands_in_place(&mut self, rows_per_band: usize) -> Vec<InPlaceSubBuffer<'_>> {
         let remainder_band_rows = self.bounds.1 % rows_per_band;
         let num_bands = self.bounds.1 / rows_per_band + if remainder_band_rows > 0 { 1 } else { 0 };
@@ -153,6 +162,9 @@ impl<'parent> Canvas for InPlaceSubBuffer<'parent> {
     }
 }
 
+/// PixelF represents a single pixel whose r, g, and b values are f32s in [0, 1]
+/// These are used in processing, since they have high accuracy, and are then
+/// converted to u8s for export to file.
 #[derive(Clone, Copy, Debug)]
 pub struct PixelF {
     pub r: f32,

@@ -5,15 +5,19 @@ use crate::ray::Ray;
 use crate::utils::lerp;
 use crate::vectors::V3;
 
+/// A Material defines ways to react to light and propogate color.
 #[derive(Clone, Copy, Debug)]
 pub enum Material {
+	/// This material reflects in roughly random directions, creating a matte surface.
     Diffuse {
         albedo: PixelF,
     },
+	/// This material reflects like a mirror, with optional fuzz to simulate a metallic sheen.
     Specular {
         albedo: PixelF,
         fuzz: f32,
     },
+	/// This material refracts and reflects light, like glass or water.
     Dielectric {
         albedo: PixelF,
         r_index_ratio: f32,

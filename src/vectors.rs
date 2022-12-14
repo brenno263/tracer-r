@@ -10,6 +10,10 @@ use crate::traits::WeightedMean;
 
 const EPLISON: f32 = 0.0001;
 
+// This module has a ton of vector math stuff. It's all fairly self-explanatory so I'm not
+// going to comment it up too heavily.
+
+/// V3 is a 3-dimensional vector, something used a lot in this project.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct V3 {
     pub x: f32,
@@ -197,6 +201,12 @@ impl std::fmt::Display for V3 {
     }
 }
 
+
+/// This went unused, but I briefly toyed with the idea of partitioning a BVH across arbitrary planes,
+/// rather than axis-aligned ones. This would have made comparisons significantly more expensive with
+/// very little gain. The one situation where these would be great is if I could get a linear regression
+/// of centroids, to determine a specific angle where I could best partition a group of primitives.
+/// However, that would require me to implement 3d linear regression, and I don't really want to.
 #[derive(Clone, Copy, Debug)]
 pub struct Plane {
     pub point: V3,
