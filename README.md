@@ -11,7 +11,7 @@ As such, it may not have get the same performance increases that MPI does on a h
 ## Running Tracer-R
 
 If you don't want to install Rust toolings, I've included some precompiled, statically linked binaries for you.
-Check out the `precompiled_binaries` folder for those - you'll most likely want just tracer-r.
+Check out the `precompiled_binaries` folder for those - you'll most likely want just `tracer-r`.
 
 #### Building the Project
 
@@ -33,9 +33,14 @@ $ cargo build --release
 Then, your output binaries can be found in the `./target` directory.
 
 Alternatively, you can run the project directly through cargo.
+Note that you most likely want the `tracer-r` binary.
 
 ```bash
-$ cargo run --release -- <arguments>
-# OR, to run a specific binary
 $ cargo run --release --bin <benchmark|tracer-r|tracer-r-mpi> -- <arguments>
+```
+
+Here's a full example with arguments:
+
+```bash
+$ cargo run --release --bin tracer-r -- out.png 128x128 16 bvh grid yes
 ```
