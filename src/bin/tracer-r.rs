@@ -89,7 +89,7 @@ fn main() {
         RtStrategy::BVHFlat => {
             println!("Generating Flat BVH...");
             let bvh = BVHBuildNode::new(elements, 4);
-            let flat_bvh: LinearBVH = bvh.into();
+            let flat_bvh: BVHFlat = bvh.into();
             println!("Done.");
             conditional_render(&raytracer, &camera, &flat_bvh, bounds, parallel)
         }

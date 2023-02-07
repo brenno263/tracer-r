@@ -8,13 +8,15 @@ use std::ops::Sub;
 
 use crate::traits::WeightedMean;
 
+use serde::{Serialize, Deserialize};
+
 const EPLISON: f32 = 0.0001;
 
 // This module has a ton of vector math stuff. It's all fairly self-explanatory so I'm not
 // going to comment it up too heavily.
 
 /// V3 is a 3-dimensional vector, something used a lot in this project.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct V3 {
     pub x: f32,
     pub y: f32,

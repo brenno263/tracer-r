@@ -3,6 +3,8 @@ use rand::Rng;
 
 use crate::traits::Canvas;
 
+use serde::{Serialize, Deserialize};
+
 
 /// Represents an image buffer than can be written to, then saved to a file.
 /// This is what the raytracer writes to, abstacting away file shenanigans.
@@ -165,7 +167,7 @@ impl<'parent> Canvas for InPlaceSubBuffer<'parent> {
 /// PixelF represents a single pixel whose r, g, and b values are f32s in [0, 1]
 /// These are used in processing, since they have high accuracy, and are then
 /// converted to u8s for export to file.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct PixelF {
     pub r: f32,
     pub g: f32,

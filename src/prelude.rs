@@ -1,5 +1,5 @@
 pub use crate::{
-    bounded_volume_hierarchy::{BVHBuildNode, Bounds, LinearBVH},
+    bounded_volume_hierarchy::{BVHBuildNode, Bounds, BVHFlat},
     camera::Camera,
     image_handling::{ImageBuffer, PixelF},
     material::Material,

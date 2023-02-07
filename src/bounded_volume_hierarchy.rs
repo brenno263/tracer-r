@@ -318,16 +318,16 @@ impl Drawable for &BVHBuildNode {
     }
 }
 
-/// The LinearBVH is a flattened BVH tree, eschewing pointers for a contiguous chunk of memory.
+/// The FlatBVH is a flattened BVH tree, eschewing pointers for a contiguous chunk of memory.
 /// It also crops extra information out of its primitives, terminating in Primitives rather than
 /// BVHPrimitiveInfos.
-pub struct LinearBVH {
-    nodes: Vec<LinearBVHNode>,
+pub struct BVHFlat {
+    nodes: Vec<BVHFlatNode>,
 }
 
-impl LinearBVH {}
+impl BVHFlat {}
 
-impl From<BVHBuildNode> for LinearBVH {
+impl From<BVHBuildNode> for BVHFlat {
     fn from(root: BVHBuildNode) -> Self {
         // Since this is a flattened binary tree, we need our number of nodes to be a
         // power of two for child-getting logic to work out. Here we find the smallest
@@ -336,7 +336,7 @@ impl From<BVHBuildNode> for LinearBVH {
         while n_nodes < root.n_nodes {
             n_nodes <<= 1;
         }
-        let mut array: Vec<LinearBVHNode> = Vec::with_capacity(n_nodes);
+        let mut array: Vec<BVHFlatNode> = Vec::with_capacity(n_nodes);
 
         let mut current_node = root;
         let mut node_queue: VecDeque<BVHBuildNode> = VecDeque::with_capacity(128);
@@ -346,18 +346,18 @@ impl From<BVHBuildNode> for LinearBVH {
                 BVHBuildNodeData::PrimInfos(mut prim_infos) => {
                     let prims: Vec<Primitive> =
                         prim_infos.drain(..).map(|pi| pi.primitive).collect();
-                    array.push(LinearBVHNode {
+                    array.push(BVHFlatNode {
                         split_axis: current_node.split_axis,
                         bounds: current_node.bounds,
-                        data: LinearBVHNodeData::Prims(prims),
+                        data: BVHFlatNodeData::Prims(prims),
                     });
                 }
                 BVHBuildNodeData::Children(children) => {
                     let first_child_offset = array.len() + 1 + node_queue.len();
-                    array.push(LinearBVHNode {
+                    array.push(BVHFlatNode {
                         split_axis: current_node.split_axis,
                         bounds: current_node.bounds,
-                        data: LinearBVHNodeData::Children((
+                        data: BVHFlatNodeData::Children((
                             first_child_offset,
                             first_child_offset + 1,
                         )),
@@ -378,22 +378,22 @@ impl From<BVHBuildNode> for LinearBVH {
             }
         }
 
-        LinearBVH { nodes: array }
+        BVHFlat { nodes: array }
     }
 }
 
-struct LinearBVHNode {
+struct BVHFlatNode {
     split_axis: SplitAxis,
     bounds: Bounds,
-    data: LinearBVHNodeData,
+    data: BVHFlatNodeData,
 }
 
-enum LinearBVHNodeData {
+enum BVHFlatNodeData {
     Children((usize, usize)),
     Prims(Vec<Primitive>),
 }
 
-impl Drawable for LinearBVH {
+impl Drawable for BVHFlat {
     fn intersect(&self, mut ray: Ray) -> Option<Collision> {
         let mut current_offset = 0;
         let mut offset_stack: Vec<usize> = Vec::with_capacity(128);
@@ -405,7 +405,7 @@ impl Drawable for LinearBVH {
             let node = &self.nodes[current_offset];
             if node.bounds.intersects_with_dir_inv(&ray, dir_inv) {
                 match node.data {
-                    LinearBVHNodeData::Prims(ref prims) => {
+                    BVHFlatNodeData::Prims(ref prims) => {
                         for p in prims {
                             if let Some(coll) = p.intersect(ray) {
                                 ray.max = coll.t;
@@ -413,7 +413,7 @@ impl Drawable for LinearBVH {
                             }
                         }
                     }
-                    LinearBVHNodeData::Children(child_offsets) => {
+                    BVHFlatNodeData::Children(child_offsets) => {
                         // If the direction is negative compared to this axis, visit
                         // the second (more positive) child first, since it's spacially
                         // closer.

@@ -29,7 +29,7 @@ fn main() {
 
     timed_run("flat bvh", || {
         let bvh = BVHBuildNode::new(e.clone(), 4);
-        let fbvh: LinearBVH = bvh.into();
+        let fbvh: BVHFlat = bvh.into();
         let i = render(&r, &c, &fbvh, b);
         i.save("dump.png".to_owned()).unwrap();
     });
@@ -47,7 +47,7 @@ fn main() {
 
     timed_run("flat bvh parallel", || {
         let bvh = BVHBuildNode::new(e.clone(), 4);
-        let fbvh: LinearBVH = bvh.into();
+        let fbvh: BVHFlat = bvh.into();
         let i = par_render(&r, &c, &fbvh, b);
         i.save("dump.png".to_owned()).unwrap();
     });

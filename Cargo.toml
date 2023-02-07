@@ -12,3 +12,4 @@ num = "0.4.0"
 rand = "0.8.5"
 rayon = "1.6.0"
 partition = "0.1.2"
+serde = { version = "1.0.152", features = ["serde_derive"] }

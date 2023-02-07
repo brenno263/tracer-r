@@ -5,8 +5,10 @@ use crate::ray::Ray;
 use crate::utils::lerp;
 use crate::vectors::V3;
 
+use serde::{Serialize, Deserialize};
+
 /// A Material defines ways to react to light and propogate color.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub enum Material {
 	/// This material reflects in roughly random directions, creating a matte surface.
     Diffuse {
