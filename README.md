@@ -15,7 +15,7 @@ A write up and presentation can be found in the `presentation` directory, alongs
 ## Running Tracer-R
 
 If you don't want to install Rust toolings, I've included some precompiled, statically linked binaries for you.
-Check out the `precompiled_binaries` folder for those - you'll most likely want just `tracer-r`.
+Check out the `precompiled_binaries` folder for those - you'll most likely want just `tracer-r`. These will only work on unix-based systems, and I'm not entirely sure which ones exactly. So no promises.
 
 #### Building the Project
 
