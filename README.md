@@ -3,6 +3,8 @@
 Tracer-R is a raytracer built by myself - Brennan Seymour - as a final project for MATH 424 - High Performance Computing.
 Primarily, this is a subject matter which is pretty cool to me, but it also provides a great example to practice parallel computing, which is a focus of the class.
 
+![A glamour-shot](pics/spheres_1.png)
+
 I have deviated a bit from the rubric by not using MPI to accelerate the program on a high-performance computing cluster.
 To make up for that a bit, I've included a binary - tracer-r-mpi - which achieves a similar message-passing pattern using Rust's mpsc channels.
 However, it should be noted that this library operates on OS threads, not separate processes like MPI.
